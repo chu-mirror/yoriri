@@ -1,12 +1,15 @@
 package cb
 
 import (
+	"fmt"
+
 	"github.com/chu-mirror/yoriri/activity"
+	"github.com/bwmarrin/discordgo"
 )
 
 func init() {
-	RegisterCommand(
-		*discordgo.ApplicationCommand {
+	activity.RegisterCommand(
+		&discordgo.ApplicationCommand {
 			Name: "ido",
 			Description: "Register your hit",
 			Type: discordgo.ChatApplicationCommand,
@@ -68,6 +71,6 @@ func init() {
 					panic(err)
 				}
 			}
-		}
+		},
 	)
 }

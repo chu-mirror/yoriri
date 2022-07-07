@@ -6,6 +6,7 @@ import (
 	"os/signal"
 
 	"github.com/chu-mirror/yoriri/activity"
+	_ "github.com/chu-mirror/yoriri/activity/cb"
 )
 
 func main() {
