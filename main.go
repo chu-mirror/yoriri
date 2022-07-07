@@ -1,10 +1,7 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"io/ioutil"
-	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
@@ -14,36 +11,15 @@ import (
 
 /* Initialization */
 
-// 1. Get configuration.
+// 1. Get bot token and some IDs.
 
 var (
-	confFile string // the path of configuration file
+	AppId = os.Getenv("APPID")
+	PublicKey = os.Getenv("PUBLICKEY")
+	ClientId = os.Getenv("CLIENTID")
+	BotToken = os.Getenv("BOTTOKEN")
+	GuildId = os.Getenv("GUILDID")
 )
-
-func init() {
-	flag.StringVar(&confFile, "c", "./bot.json", "the path of configuratioin file")
-	flag.Parse()
-}
-
-type config struct {
-	AppId string
-	PublicKey string
-	ClientId string
-	BotToken string
-	GuildId string
-}
-
-var conf config
-
-func init() {
-	data, err := ioutil.ReadFile(confFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err = json.Unmarshal(data, &conf); err != nil {
-		log.Fatal(err)
-	}
-}
 
 // 2. Instantialize bot.
 
@@ -51,7 +27,7 @@ var s *discordgo.Session
 
 func init() {
 	var err error
-	s, err = discordgo.New("Bot " + conf.BotToken)
+	s, err = discordgo.New("Bot " + BotToken)
 	if err != nil {
 		log.Fatalf("Invalid bot token: %v", err)
 	}
@@ -142,7 +118,7 @@ func main() {
 	}
 	defer s.Close()
 
-	_, err = s.ApplicationCommandBulkOverwrite(s.State.User.ID, conf.GuildId, commands)
+	_, err = s.ApplicationCommandBulkOverwrite(s.State.User.ID, GuildId, commands)
 	if err != nil {
 		log.Fatalf("Cannot register commands: %v", err)
 	}
