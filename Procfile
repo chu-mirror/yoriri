@@ -1,1 +1,1 @@
-bot: main
+bot: go run main.go
