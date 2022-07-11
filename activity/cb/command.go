@@ -33,11 +33,11 @@ func init() {
 		func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 			switch i.Type {
 			case discordgo.InteractionApplicationCommand:
-				boss := i.ApplicationCommandData().Options[0].IntValue
-				if boss() < 1 || boss() > 5 {
+				boss := i.ApplicationCommandData().Options[0].IntValue()
+				if boss < 1 || boss > 5 {
 					return respond(s, i, "Invalid boss number")
 				}
-				errNo := hit.Hit(i.Interaction.User.ID, state.IntToBossNo(boss()), false)
+				errNo := hit.Hit(i.Interaction.User.ID, state.IntToBossNo(boss), false)
 				switch errNo {
 				case hit.HitLockedFail:
 					return respond(s, i, "The boss is hitting by another people")
