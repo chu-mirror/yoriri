@@ -13,7 +13,7 @@ type stateHitting struct {
 }
 
 var (
-	memberState = make(map[string]stateHitting)
+	memberState = make(map[string]*stateHitting)
 	lock [5]bool
 )
 
@@ -31,7 +31,7 @@ func Hit(uid string, boss state.BossNo, sync bool) int {
 	}
 	_, ok := memberState[uid]
 	if !ok {
-		memberState[uid] = stateHitting{
+		memberState[uid] = &stateHitting{
 			hitted: 0,
 			hitting: false,
 			bossInHitting: 0,
