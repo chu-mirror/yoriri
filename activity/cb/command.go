@@ -27,9 +27,11 @@ func init() {
 					Type: discordgo.ApplicationCommandOptionInteger,
 					Required: true,
 					Autocomplete: false,
+					MinValue: 1,
+					MaxValue: 5,
 				},
 				{
-					Name: "to sync",
+					Name: "sync",
 					Description: "whether to sync",
 					Type: discordgo.ApplicationCommandOptionBoolean,
 					Required: false,
