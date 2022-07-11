@@ -37,7 +37,7 @@ func init() {
 				if boss < 1 || boss > 5 {
 					return respond(s, i, "Invalid boss number")
 				}
-				errNo := hit.Hit(i.Interaction.User.ID, state.IntToBossNo(boss), false)
+				errNo := hit.Hit(i.Interaction.Member.User.ID, state.IntToBossNo(boss), false)
 				switch errNo {
 				case hit.HitLockedFail:
 					return respond(s, i, "The boss is hitting by another people")
