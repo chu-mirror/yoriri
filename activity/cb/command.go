@@ -31,7 +31,7 @@ func init() {
 				{
 					Name: "to sync",
 					Description: "whether to sync",
-					Type: discordgo.ApplicationCommandOptionBool,
+					Type: discordgo.ApplicationCommandOptionBoolean,
 					Required: false,
 					Autocomplete: false,
 				},
