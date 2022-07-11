@@ -28,16 +28,28 @@ func init() {
 					Required: true,
 					Autocomplete: false,
 				},
+				{
+					Name: "to sync",
+					Description: "whether to sync",
+					Type: discordgo.ApplicationCommandOptionBool,
+					Required: false,
+					Autocomplete: false,
+				},
 			},
 		},
 		func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 			switch i.Type {
 			case discordgo.InteractionApplicationCommand:
-				boss := i.ApplicationCommandData().Options[0].IntValue()
+				ops := i.ApplicationCommandData().Options
+				boss := ops[0].IntValue
+				tosync := false
+				if len(ops) > 0 {
+					tosync = i.ApplicationCommandData().Options[1].BoolValue()
+				}
 				if boss < 1 || boss > 5 {
 					return respond(s, i, "Invalid boss number")
 				}
-				errNo := hit.Hit(i.Interaction.Member.User.ID, state.IntToBossNo(boss), false)
+				errNo := hit.Hit(i.Interaction.Member.User.ID, state.IntToBossNo(boss), tosync)
 				switch errNo {
 				case hit.HitLockedFail:
 					return respond(s, i, "The boss is hitting by another people")
