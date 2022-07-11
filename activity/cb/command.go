@@ -1,76 +1,53 @@
 package cb
 
 import (
-	"fmt"
-
 	"github.com/chu-mirror/yoriri/activity"
+	"github.com/chu-mirror/yoriri/activity/cb/hit"
+	"github.com/chu-mirror/yoriri/activity/cb/state"
 	"github.com/bwmarrin/discordgo"
 )
+
+func respond(s *discordgo.Session, i *discordgo.InteractionCreate, msg string) error {
+	return s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse {
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData { Content: msg },
+	})
+}
 
 func init() {
 	activity.RegisterCommand(
 		&discordgo.ApplicationCommand {
-			Name: "ido",
-			Description: "Register your hit",
+			Name: "hit",
+			Description: "Hit a boss",
 			Type: discordgo.ChatApplicationCommand,
 			Options: []*discordgo.ApplicationCommandOption {
 				{
 					Name: "boss",
-					Description: "Which boss to hit",
-					Type: discordgo.ApplicationCommandOptionString,
-					Required: true,
-					Autocomplete: true,
-				},
-				{
-					Name: "damage",
-					Description: "how much you can do",
-					Type: discordgo.ApplicationCommandOptionString,
+					Description: "which boss to hit, input the number directly(1~5)",
+					Type: discordgo.ApplicationCommandOptionInteger,
 					Required: true,
 					Autocomplete: false,
 				},
 			},
 		},
-		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 			switch i.Type {
 			case discordgo.InteractionApplicationCommand:
-				data := i.ApplicationCommandData()
-				err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse {
-					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionResponseData {
-						Content: fmt.Sprintf(
-							"You registered to hit %q",
-							data.Options[0].StringValue(),
-						),
-					},
-				})
-				if err !=  nil {
-					panic(err)
+				boss := i.ApplicationCommandData().Options[0].IntValue
+				if boss() < 1 || boss() > 5 {
+					return respond(s, i, "Invalid boss number")
 				}
-			case discordgo.InteractionApplicationCommandAutocomplete:
-				choices := []*discordgo.ApplicationCommandOptionChoice {
-					{
-						Name: "B1",
-						Value: "1",
-					},
-					{
-						Name: "B2",
-						Value: "2",
-					},
-					{
-						Name: "B3",
-						Value: "3",
-					},
+				errNo := hit.Hit(i.Interaction.User.ID, state.IntToBossNo(boss()), false)
+				switch errNo {
+				case hit.HitLockedFail:
+					return respond(s, i, "The boss is hitting by another people")
+				case hit.HitInHittingFail:
+					return respond(s, i, "You are already hitting another boss")
 				}
-				err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse {
-					Type: discordgo.InteractionApplicationCommandAutocompleteResult,
-					Data: &discordgo.InteractionResponseData {
-						Choices: choices,
-					},
-				})
-				if err != nil {
-					panic(err)
-				}
+				return respond(s, i, "Go Go Go")
 			}
+			return nil
 		},
 	)
 }
+

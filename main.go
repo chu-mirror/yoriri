@@ -12,7 +12,7 @@ import (
 func main() {
 	bot, err := activity.Birth(os.Getenv("BOTTOKEN"))
 	if err != nil {
-		log.Fatalf("Cannot give bot birth")
+		log.Fatalf("Cannot give bot birth: %v", err)
 	}
 	err = bot.Start()
 	if err != nil {
