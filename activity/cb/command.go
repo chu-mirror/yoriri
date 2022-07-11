@@ -41,10 +41,10 @@ func init() {
 			switch i.Type {
 			case discordgo.InteractionApplicationCommand:
 				ops := i.ApplicationCommandData().Options
-				boss := ops[0].IntValue
+				boss := ops[0].IntValue()
 				tosync := false
-				if len(ops) > 0 {
-					tosync = i.ApplicationCommandData().Options[1].BoolValue()
+				if len(ops) > 1 {
+					tosync = ops[1].BoolValue()
 				}
 				if boss < 1 || boss > 5 {
 					return respond(s, i, "Invalid boss number")
