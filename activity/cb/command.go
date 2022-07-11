@@ -32,7 +32,7 @@ func init() {
 					Name: "sync",
 					Description: "whether to sync",
 					Type: discordgo.ApplicationCommandOptionBoolean,
-					Required: true,
+					Required: false,
 					Autocomplete: false,
 				},
 			},
