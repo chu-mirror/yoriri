@@ -8,13 +8,13 @@ import (
 // BossNo denote the boss.
 type BossNo int64
 
-func IntToBossNo(n int64) BossNo{
-	return BossNo(n-1)
+func IntToBossNo(n int64) BossNo {
+	return BossNo(n - 1)
 }
 
 var (
-	bossHP [5][5]int // the matrix of bosses' HP from tier 1 to 5, boss 1 to 5
-	wholeDMG [5]int // the whole damage to boss 1 to 5 done by members
+	bossHP   [5][5]int // the matrix of bosses' HP from tier 1 to 5, boss 1 to 5
+	wholeDMG [5]int    // the whole damage to boss 1 to 5 done by members
 
 	tierLaps = [4]int{3, 7, 20, 8} // laps in tier 1 to 4
 )
@@ -31,7 +31,7 @@ func current(boss BossNo) (l, t, dmg int) {
 			l += dmg / bossHP[t][boss]
 			return
 		} else {
-			dmg -= tierLaps[t]*bossHP[t][boss]
+			dmg -= tierLaps[t] * bossHP[t][boss]
 			l += tierLaps[t]
 		}
 	}
@@ -57,4 +57,3 @@ func Kill(boss BossNo) {
 	_, t, dmg := current(boss)
 	wholeDMG[boss] += (dmg/bossHP[t][boss]+1)*bossHP[t][boss] - dmg
 }
-

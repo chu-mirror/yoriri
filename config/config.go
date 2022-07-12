@@ -7,4 +7,3 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 )
-

@@ -1,20 +1,20 @@
 package hit
 
-import(
-	"github.com/chu-mirror/yoriri/activity/cb/state"
-	"github.com/chu-mirror/yoriri/activity"
+import (
 	"github.com/bwmarrin/discordgo"
+	"github.com/chu-mirror/yoriri/activity"
+	"github.com/chu-mirror/yoriri/activity/cb/state"
 )
 
 type stateHitting struct {
-	hitted int
-	hitting bool
+	hitted        int
+	hitting       bool
 	bossInHitting state.BossNo
 }
 
 var (
 	memberState = make(map[string]*stateHitting)
-	lock [5]bool
+	lock        [5]bool
 )
 
 const (
@@ -32,8 +32,8 @@ func Hit(uid string, boss state.BossNo, sync bool) int {
 	_, ok := memberState[uid]
 	if !ok {
 		memberState[uid] = &stateHitting{
-			hitted: 0,
-			hitting: false,
+			hitted:        0,
+			hitting:       false,
 			bossInHitting: 0,
 		}
 	}
@@ -75,7 +75,7 @@ func Done(uid string, dmg int) int {
 	}
 	lock[boss] = false
 	s := memberState[uid]
-	s.hitting = false 
+	s.hitting = false
 	return HitSuccess
 }
 
@@ -87,7 +87,7 @@ func Kill(uid string) int {
 	state.Kill(boss)
 	lock[boss] = false
 	s := memberState[uid]
-	s.hitting = false 
+	s.hitting = false
 	return HitSuccess
 }
 

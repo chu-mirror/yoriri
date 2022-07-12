@@ -4,16 +4,16 @@ import "testing"
 
 // the data is from CB june 2022
 func init() {
-	setHP(0, [5]int{6000, 8000, 10000, 12000, 15000});
-	setHP(1, [5]int{6000, 8000, 10000, 12000, 15000});
-	setHP(2, [5]int{12000, 14000, 17000, 19000, 22000});
-	setHP(3, [5]int{22000, 23000, 27000, 29000, 31000});
-	setHP(4, [5]int{104000, 110000, 125000, 140000, 150000});
+	setHP(0, [5]int{6000, 8000, 10000, 12000, 15000})
+	setHP(1, [5]int{6000, 8000, 10000, 12000, 15000})
+	setHP(2, [5]int{12000, 14000, 17000, 19000, 22000})
+	setHP(3, [5]int{22000, 23000, 27000, 29000, 31000})
+	setHP(4, [5]int{104000, 110000, 125000, 140000, 150000})
 }
 
 func TestCurrent(t *testing.T) {
 	tests := []struct {
-		curDMG int
+		curDMG  int
 		l, t, d int
 	}{
 		{0, 0, 0, 0},
@@ -33,10 +33,10 @@ func TestCurrent(t *testing.T) {
 func TestDone(t *testing.T) {
 	tests := []struct {
 		initial [5]int
-		boss BossNo
-		dmg int
-		ok bool
-		final [5]int
+		boss    BossNo
+		dmg     int
+		ok      bool
+		final   [5]int
 	}{
 		// tier1
 		{[5]int{0, 0, 0, 0, 0}, 0, 6000, false, [5]int{0, 0, 0, 0, 0}},

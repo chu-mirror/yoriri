@@ -3,26 +3,26 @@
 package activity
 
 import (
-	"os"
-	"log"
 	"fmt"
+	"log"
+	"os"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 var (
-	commands []*discordgo.ApplicationCommand
-	commandHandlers = make(map[string]func(*discordgo.Session, *discordgo.InteractionCreate)error)
+	commands        []*discordgo.ApplicationCommand
+	commandHandlers = make(map[string]func(*discordgo.Session, *discordgo.InteractionCreate) error)
 
-	initializations []func(*discordgo.Session)error
+	initializations []func(*discordgo.Session) error
 )
 
-func RegisterCommand(cmd *discordgo.ApplicationCommand, handler func(*discordgo.Session, *discordgo.InteractionCreate)error) {
+func RegisterCommand(cmd *discordgo.ApplicationCommand, handler func(*discordgo.Session, *discordgo.InteractionCreate) error) {
 	commands = append(commands, cmd)
 	commandHandlers[cmd.Name] = handler
 }
 
-func RegisterInitialization(it func(*discordgo.Session)error) {
+func RegisterInitialization(it func(*discordgo.Session) error) {
 	initializations = append(initializations, it)
 }
 
@@ -35,7 +35,7 @@ func Birth(token string) (l Life, err error) {
 	return
 }
 
-func (l Life) Start() (err error){
+func (l Life) Start() (err error) {
 	l.session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if h, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
 			err := h(s, i)
@@ -48,7 +48,6 @@ func (l Life) Start() (err error){
 	if err != nil {
 		return
 	}
-
 
 	for _, it := range initializations {
 		err = it(l.session)
