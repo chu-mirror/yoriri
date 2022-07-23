@@ -7,3 +7,8 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 )
+
+var (
+	channelId = os.Getenv("CONFIGCHANNELID")
+)
+

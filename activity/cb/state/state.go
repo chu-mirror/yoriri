@@ -1,59 +1,54 @@
-// Package state save and change the state of bosses.
+// Package state handle the state of bosses
 package state
 
 import (
-//	"encoding/json"
+	"github.com/chu-mirror/yoriri/activity/cb/hit"
+	"github.com/chu-mirror/yoriri/activity/cb/boss"
 )
 
-// BossNo denote the boss.
-type BossNo int64
 
-func IntToBossNo(n int64) BossNo {
-	return BossNo(n - 1)
-}
-
-var (
-	bossHP   [5][5]int // the matrix of bosses' HP from tier 1 to 5, boss 1 to 5
-	wholeDMG [5]int    // the whole damage to boss 1 to 5 done by members
-
-	tierLaps = [4]int{3, 7, 20, 8} // laps in tier 1 to 4
-)
-
-func setHP(boss BossNo, hp [5]int) {
-	bossHP[boss] = hp
-}
-
-// current returns current progress of boss.
-func current(boss BossNo) (l, t, dmg int) {
-	dmg = wholeDMG[boss]
-	for t = range tierLaps {
-		if dmg < tierLaps[t]*bossHP[t][boss] {
-			l += dmg / bossHP[t][boss]
-			return
-		} else {
-			dmg -= tierLaps[t] * bossHP[t][boss]
-			l += tierLaps[t]
+// wholeDamage return the whole damage on a boss in current records
+func wholeDamage(records []hit.Record, target boss.No) (w int) {
+	for _, r := range records {
+		if (r.Boss == target) {
+			w += r.Damage
 		}
 	}
-	l += dmg / bossHP[4][boss]
-	t = 4
 	return
 }
 
-// Done records damage to boss, return true if the damage is legal,
-// false if illegal.  Whether legal or not is depended by whether this
-// damage will kill current boss.
-func Done(boss BossNo, dmg int) bool {
-	_, t, d := current(boss)
-	if (d+dmg)/bossHP[t][boss] != d/bossHP[t][boss] {
-		return false
+// current returns current progress of target.
+func current(records []hit.Record, target boss.No) (t, l, d int) {
+	d = wholeDamage(records, target)
+
+	var tn int
+	for t, tn = range boss.TierLaps {
+		if d < tn*boss.HP[t][target] {
+			l = d / boss.HP[t][target]
+			d -= l * boss.HP[t][target]
+			return
+		} else {
+			d -= tn * boss.HP[t][target]
+		}
 	}
-	wholeDMG[boss] += dmg
-	return true
+	t = 4
+	l = d / boss.HP[t][target]
+	d -= l * boss.HP[t][target]
+	return
 }
 
-// Kill records damage to boss in case current boss is killed.
-func Kill(boss BossNo) {
-	_, t, dmg := current(boss)
-	wholeDMG[boss] += (dmg/bossHP[t][boss]+1)*bossHP[t][boss] - dmg
+// Done records damage to target, return false if the damage is illegal.
+// Whether illegal or not is depended on whether this damage will kill current target.
+func Done(records []hit.Record, uid string, dmg int, target boss.No, full bool) ([]hit.Record, bool) {
+	t, _, d := current(records, target)
+	if d+dmg >= boss.HP[t][target] {
+		return records, false
+	}
+	return hit.AppendRecord(records, uid, dmg, target, full), true
+}
+
+// Kill records damage to target in case current boss is killed.
+func Kill(records []hit.Record, uid string, target boss.No) []hit.Record {
+	t, _, d := current(records, target)
+	return hit.AppendRecord(records, uid, boss.HP[t][target]-d, target, false)
 }

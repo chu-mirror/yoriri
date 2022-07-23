@@ -1,78 +1,97 @@
 package state
 
-import "testing"
+import (
+	"testing"
+	"time"
+	"github.com/chu-mirror/yoriri/activity/cb/hit"
+	"github.com/chu-mirror/yoriri/activity/cb/boss"
+)
 
 // the data is from CB june 2022
 func init() {
-	setHP(0, [5]int{6000, 8000, 10000, 12000, 15000})
-	setHP(1, [5]int{6000, 8000, 10000, 12000, 15000})
-	setHP(2, [5]int{12000, 14000, 17000, 19000, 22000})
-	setHP(3, [5]int{22000, 23000, 27000, 29000, 31000})
-	setHP(4, [5]int{104000, 110000, 125000, 140000, 150000})
+	boss.HP = [5][5]int {
+		{6000, 8000, 10000, 12000, 15000},
+		{6000, 8000, 10000, 12000, 15000},
+		{12000, 14000, 17000, 19000, 22000},
+		{22000, 23000, 27000, 29000, 31000},
+		{104000, 110000, 125000, 140000, 150000},
+	}
 }
 
 func TestCurrent(t *testing.T) {
 	tests := []struct {
 		curDMG  int
-		l, t, d int
+		t, l, d int
 	}{
 		{0, 0, 0, 0},
-		{6000, 1, 0, 6000},
-		{18000, 3, 1, 0},
+		{6000, 0, 1, 0},
+		{18000, 1, 0, 0},
+		{20000, 1, 0, 2000},
+		{24000, 1, 1, 0},
 	}
 
 	for _, test := range tests {
-		wholeDMG[0] = test.curDMG
-		l, tier, d := current(0)
+		records := []hit.Record{
+			{"chu", test.curDMG, 0, true, time.Now()},
+		}
+		tier, l, d := current(records, 0)
 		if l != test.l || tier != test.t || d != test.d {
-			t.Errorf("%v, but %d %d %d", test, l, tier, d)
+			t.Errorf("%v, but %d %d %d", test, tier, l, d)
 		}
 	}
 }
 
 func TestDone(t *testing.T) {
 	tests := []struct {
-		initial [5]int
-		boss    BossNo
+		initial int
 		dmg     int
 		ok      bool
-		final   [5]int
+		final   int
 	}{
 		// tier1
-		{[5]int{0, 0, 0, 0, 0}, 0, 6000, false, [5]int{0, 0, 0, 0, 0}},
-		{[5]int{0, 2000, 0, 0, 0}, 1, 4000, true, [5]int{0, 6000, 0, 0, 0}},
-		{[5]int{0, 2000, 0, 0, 0}, 1, 7000, false, [5]int{0, 2000, 0, 0, 0}},
+		{0, 6000, false, 0},
 		// tier2
-		{[5]int{18000, 0, 0, 0, 0}, 0, 3000, true, [5]int{21000, 0, 0, 0, 0}},
-		{[5]int{18000, 0, 0, 0, 0}, 0, 6000, false, [5]int{18000, 0, 0, 0, 0}},
+		{18000, 3000, true, 21000},
+		{18000, 6000, false, 18000},
 		// tier3
-		{[5]int{60000, 0, 0, 0, 0}, 0, 6000, true, [5]int{66000, 0, 0, 0, 0}},
-		{[5]int{66000, 0, 0, 0, 0}, 0, 6000, false, [5]int{66000, 0, 0, 0, 0}},
+		{60000, 6000, true, 66000},
+		{66000, 6000, false, 66000},
 		// tier4
-		{[5]int{300000, 0, 0, 0, 0}, 0, 11000, true, [5]int{311000, 0, 0, 0, 0}},
-		{[5]int{311000, 0, 0, 0, 0}, 0, 11000, false, [5]int{311000, 0, 0, 0, 0}},
+		{300000, 11000, true, 311000},
+		{311000, 11000, false, 311000},
 		// tier5
-		{[5]int{476000, 0, 0, 0, 0}, 0, 52000, true, [5]int{528000, 0, 0, 0, 0}},
-		{[5]int{528000, 0, 0, 0, 0}, 0, 52000, false, [5]int{528000, 0, 0, 0, 0}},
+		{476000, 52000, true, 528000},
+		{528000, 52000, false, 528000},
 	}
 	for _, test := range tests {
-		wholeDMG = test.initial
-		ok := Done(test.boss, test.dmg)
-		if ok != test.ok || wholeDMG != test.final {
-			t.Errorf("Done(%d, %d): %v -> %v, ok = %v", test.boss, test.dmg, test.initial, wholeDMG, ok)
+		records := []hit.Record {
+			{"chu", test.initial, 0, true, time.Now()},
+		}
+		records, ok := Done(records, "chu", test.dmg, 0, true)
+		if ok != test.ok || wholeDamage(records, 0) != test.final {
+			t.Errorf("Done %d: %v -> %v, ok = %v", test.dmg, test.initial, wholeDamage(records, 0), ok)
 		}
 	}
 }
 
 func TestKill(t *testing.T) {
-	wholeDMG = [5]int{0, 0, 0, 0, 0}
-
-	final := []int{6000, 6000, 24000, 72000, 322000, 580000}
-	for i, dmg := range []int{0, 2000, 18000, 60000, 300000, 528000} {
-		wholeDMG[0] = dmg
-		Kill(0)
-		if wholeDMG[0] != final[i] {
-			t.Errorf("Kill(0): %v -> %v", dmg, wholeDMG[0])
+	tests := []struct {
+		initial, final int
+	}{
+		{0, 6000},
+		{2000, 6000},
+		{18000, 24000},
+		{60000, 72000},
+		{300000, 322000},
+		{528000, 580000},
+	}
+	for _, test := range tests {
+		records := []hit.Record {
+			{"chu", test.initial, 0, true, time.Now()},
+		}
+		records = Kill(records, "chu", 0)
+		if wholeDamage(records, 0) != test.final {
+			t.Errorf("Kill: %v -> %v", test.initial, wholeDamage(records, 0))
 		}
 	}
 }
