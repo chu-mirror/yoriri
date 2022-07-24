@@ -1,10 +1,5 @@
 package boss
 
-import (
-	"encoding/json"
-	"time"
-)
-
 // BossNo denote the boss.
 type No int64
 
